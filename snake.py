@@ -45,15 +45,12 @@ def create_snake(position):
         x_location = location[0]
         y_location = location[1]
         pygame.draw.rect(screen,white,(x_location,y_location,20,20),1)
-        pygame.display.update()
 
 
 def generate_food():
     x_food = random.randint(30,570)
     y_food = random.randint(30,770)
     pygame.gfxdraw.filled_circle(screen, x_food, y_food, 10, green)
-
-    pygame.display.update()
     
     return x_food,y_food
 
@@ -88,9 +85,9 @@ def eat_food_check(position, x_food, y_food):
 
 def screen_end(position):
     check = False            #-------------------------------- False means screen not end. In true, its Gameover
-    if position[-1][0]>=(600) and position[-1][1]>=(800):
+    if position[-1][0]>=(600) or position[-1][1]>=(800) or position[-1][0]<=(0) or position[-1][1]<=(0):
             check = True
-    if (position[-1][0]+20)>=(600) and (position[-1][1]+20)>=(800):
+    if (position[-1][0]+20)>=(600) or (position[-1][1]+20)>=(800) or (position[-1][0]+20)<=(0) or (position[-1][1]+20)<=(0):
             check = True
 
     return check
@@ -116,12 +113,21 @@ def game_loop():
 
     create_snake(position) #snake created
 
-    x_food,y_food=generate_food() #food generated
+    x_food,y_food = generate_food() #food generated
+
+    pygame.display.update()
 
     while True:
+
+        if screen_end(position):
+            print('screen ends')
+            quit_game()
+
+        screen.fill(black)
         
+        pygame.gfxdraw.filled_circle(screen, x_food, y_food, 10, green)
+
         for event in pygame.event.get():
-        #event = pygame.event.get()
 
             if event.type == pygame.QUIT:
                 quit_game()
@@ -141,24 +147,26 @@ def game_loop():
         x_new = position[-1][0] + x_change
         y_new = position[-1][1] + y_change
 
-        print(position)
+        #print(position)
 
         position.append((x_new,y_new))
+        
+        check_food = eat_food_check(position, x_food, y_food)
+
+        if check_food==True:
+            x_food, y_food = generate_food()
+            snake_length = snake_length + 1
+            print('Hurray - Your score is ',snake_length)
+
+        if check_food==False:
+            #print('one down')
+            del position[0]
 
         create_snake(position)
 
-        if eat_food_check(position, x_food, y_food):
-            x_food, y_food = generate_food()
-            snake_length = snake_length + 1
-        if not eat_food_check(position, x_food, y_food):
-            del position[0]
+        pygame.display.update()
 
-        if screen_end(position):
-            game_over()
-
-        #pygame.display.update()
-
-        clock.tick(5)
+        clock.tick(3)
 
 
 game_loop()
